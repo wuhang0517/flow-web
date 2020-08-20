@@ -1,17 +1,38 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div style="width: 300px">
+      <el-button @click="toggleTab('sign')"><a>签约</a></el-button>
+      <el-button @click="toggleTab('attr')"><a>属性维护</a></el-button>
+      <el-button @click="toggleTab('module')"><a>模式维护</a></el-button>
+    </div>
+    <div style="width: 100%;height: 80%;margin-top: 30px;">
+      <!--    // keep-alive 将切换出去的组件保留在内存中-->
+      <prince :is="currentTab" keep-alive></prince>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import sign from "@/components/sign"
+import attr from "@/components/attr";
+import module from "@/components/module";
 
 export default {
   name: 'App',
-  components: {
-    HelloWorld
+  data() {
+    return {
+      currentTab: 'sign'
+    }
+  },
+  components: {  // 声明子组件
+    sign,
+    attr,
+    module
+  },
+  methods: {
+    toggleTab: function (tab) {
+      this.currentTab = tab;  // tab 为当前触发标签页的组件名
+    }
   }
 }
 </script>
