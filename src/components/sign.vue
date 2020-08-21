@@ -1,12 +1,30 @@
 <template>
   <div id="info">
+    <h1>属性维护</h1>
     <div style="width: 300px">
       渠道类型:
       <el-input v-model="input" size="medium" style="width: 200px" placeholder="请输入渠道类型"/>
     </div>
     <el-container style="margin-top:20px;height: 800px; width: 100%; border: 1px solid #eee; color: #2c3e50">
       <el-header style=" font-size: 12px">
-        <h1>模式</h1>
+        <div style="height:100%;width:20%;margin-top:0px;display: inline-block">
+          <h1 style="margin:0px">签约</h1>
+        </div>
+        <div
+            style="height:100%;width:20%;position: absolute;right: 0px;display: inline-block">
+          <div>
+            <el-button style="width: 150px;position: absolute;right: 0px;margin-top:10px;background: #ffffff"
+                       type="text"
+                       @click="dialogFormVisible=true">
+              新增
+            </el-button>
+            <el-button style="width: 150px;position: absolute;right: 200px;margin-top:10px;background: #ffffff"
+                       type="text"
+                       @click="selectAll()">
+              查询
+            </el-button>
+          </div>
+        </div>
       </el-header>
       <el-main>
         <el-table  :data="tableData">
@@ -28,6 +46,7 @@
           <el-table-column prop="modelTypeCHNName" label="模式中文名称" width="150"/>
           <el-table-column prop="modelFuntionId" label="模式对应的模组id" width="150"/>
           <el-table-column prop="modelFuntionName" label="模式对应的模组名称"/>
+
         </el-table>
       </el-main>
     </el-container>

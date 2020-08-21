@@ -11,7 +11,7 @@
           <div>
             <el-button style="width: 150px;position: absolute;right: 0px;margin-top:10px;background: #ffffff"
                        type="text"
-                       @click="dialogFormVisible = true">
+                       @click="dialogFormVisible=true">
               新增
             </el-button>
             <el-button style="width: 150px;position: absolute;right: 200px;margin-top:10px;background: #ffffff"
@@ -33,7 +33,7 @@
               width="100">
             <template slot-scope="scope">
               <el-button @click="handleClick(scope.row)" type="text" size="small">删除</el-button>
-
+              <el-button @click="updateattr(scope.row)" type="text" size="small">修改</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -43,15 +43,15 @@
       <el-dialog title="新增属性" :visible.sync="dialogFormVisible">
         <el-form :model="form">
           <el-form-item label="属性英文名称" :label-width="formLabelWidth">
-            <el-input v-model="form.attrName" auto-complete="off"></el-input>
+            <el-input v-model="form.attributeName" auto-complete="off"></el-input>
           </el-form-item>
           <el-form-item label="属性中文名称" :label-width="formLabelWidth">
-            <el-input v-model="form.attrChnName" auto-complete="off"></el-input>
+            <el-input v-model="form.attributeChnName" auto-complete="off"></el-input>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="insertAttr(form)">确 定</el-button>
+          <el-button type="primary" @click="insertAttr(form,type)">确 定</el-button>
         </div>
       </el-dialog>
     </div>
@@ -63,7 +63,7 @@ export default {
   name: "attr",
   data() {
     return {
-      td: this.$axios.get("/api/baseAttribute/selectAll"),
+      type: 'insert',
       tableData: [],
       dialogFormVisible: false,
       form: {
@@ -74,25 +74,38 @@ export default {
     }
   },
   methods: {
-    insertAttr(form) {
+    insertAttr(form, type) {
       const attr = {
-        attributeName: form.attrName,
-        attributeChnName: form.attrChnName
+        attributeId: form.attributeId,
+        attributeName: form.attributeName,
+        attributeChnName: form.attributeChnName
       }
-      this.$axios.post("/api/baseAttribute/insert", attr)
+      let url = "";
+      let msg = "";
+      if (type == 'insert') {
+        url = "/api/baseAttribute/insert";
+        msg = "添加成功"
+      } else if (type == 'update') {
+        url = "/api/baseAttribute/update";
+        msg = "修改成功"
+      }
+      this.$axios.post(url, attr)
           .then(response => {
             const res = response.data
             if (res.ret == true) {
-              this.$message({showClose: true, message: "添加成功", type: 'success'});
-              this.selectAll();
-              this.dialogFormVisible = false
+              this.$message({showClose: true, message: msg, type: 'success'});
+            }else {
+              this.$message({showClose: true, message: res.msg, type: 'fail'});
             }
+            this.form={}
+            this.selectAll();
           }).catch(reason => {
         console.log(reason)
-      })
+      });
+
     },
     handleClick(row) {
-      this.$confirm('此操作将删除该用户, 是否继续?', '提示', {
+      this.$confirm('此操作将删除该属性, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -120,7 +133,14 @@ export default {
               }
             }
           })
-    }
+    },
+    updateattr(row) {
+      this.dialogFormVisible = true
+      this.form.attrName = row.attributeName
+      this.form.attrChnName = row.attributeChnName
+      this.type = 'update'
+      this.form =row
+    },
   }
 }
 </script>

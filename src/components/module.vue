@@ -23,12 +23,21 @@
         </div>
       </el-header>
       <el-main>
-        <el-table :data="tableData">
+        <el-table :data="models">
           <el-table-column prop="modelTypeId" label="模式id" width="150"/>
           <el-table-column prop="modelTypeName" label="模式名称" width="150"/>
-          <el-table-column prop="modelTypeCHNName" label="模式中文名称" width="150"/>
-          <el-table-column prop="modelFuntionId" label="模式对应的模组id" width="150"/>
-          <el-table-column prop="modelFuntionName" label="模式对应的模组名称"/>
+          <el-table-column prop="modelTypeChnName" label="模式中文名称" width="150"/>
+          <el-table-column prop="modelFunctionId" label="模式对应的模组id" width="150"/>
+          <el-table-column prop="modelFunctionName" label="模式对应的模组名称"/>
+          <el-table-column
+              fixed="right"
+              label="操作"
+              width="100">
+            <template slot-scope="scope">
+              <el-button @click="deletemodel(scope.row)" type="text" size="small">删除</el-button>
+              <el-button @click="updateattr(scope.row)" type="text" size="small">修改</el-button>
+            </template>
+          </el-table-column>
         </el-table>
       </el-main>
 
@@ -37,17 +46,18 @@
       <el-dialog title="新增模式" :visible.sync="insertModuleDialog">
         <el-form :model="form">
           <el-form-item label="模式名称" :label-width="formLabelWidth">
-            <el-input v-model="form.modelTypeId" auto-complete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="模式中文名称" :label-width="formLabelWidth">
             <el-input v-model="form.modelTypeName" auto-complete="off"></el-input>
           </el-form-item>
+          <el-form-item label="模式中文名称" :label-width="formLabelWidth">
+            <el-input v-model="form.modelTypeChnName" auto-complete="off"></el-input>
+          </el-form-item>
           <el-form-item label="模式对应的模组id" :label-width="formLabelWidth">
-            <el-input v-model="form.modelFuntionId" auto-complete="off"></el-input>
+            <el-input v-model="form.modelFunctionId" auto-complete="off"></el-input>
           </el-form-item>
           <el-form-item label="模式对应的模组名称" :label-width="formLabelWidth">
-            <el-input v-model="form.modelFuntionName" auto-complete="off"></el-input>
+            <el-input v-model="form.modelFunctionName" auto-complete="off"></el-input>
           </el-form-item>
+
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="insertModuleDialog = false">取 消</el-button>
@@ -81,27 +91,13 @@ export default {
       attrs: [],
       checkAll: false,
       isIndeterminate: false,
-      tableData: [{
-        modelTypeId: '1',
-        modelTypeName: 'oure',
-        modelTypeCHNName: '汇出汇款',
-        modelFuntionId: '1',
-        modelFuntionName: 'oure'
-      },
-        {
-          modelTypeId: '2',
-          modelTypeName: '',
-          modelTypeCHNName: '汇入汇款',
-          modelFuntionId: '2',
-          modelFuntionName: ''
-        }
-      ],
+      models: [],
       insertModuleDialog: false,
       form: {
         modelTypeName: '',
-        modelTypeCHNName: '',
-        modelFuntionId: '',
-        modelFuntionName: ''
+        modelTypeChnName: '',
+        modelFunctionId: '',
+        modelFunctionName: ''
       },
       formLabelWidth: '150px'
     }
@@ -119,51 +115,70 @@ export default {
     },
     dialogFormVisible(){
       this.insertModuleDialog =true
-      this.$axios.get("/api/baseAttribute/selectAll")
-          .then(response => {
-            const res = response.data
-            if (res.ret === true) {
-              this.attrs = res.data
-            }
-          })
+      if (this.attrs.length <= 0) {
+        this.$axios.get("/api/baseAttribute/selectAll")
+            .then(response => {
+              const res = response.data
+              if (res.ret === true) {
+                this.attrs = res.data
+              }
+            });
+      }
     },
     selectModelAll() {
-      this.$axios.get("/api/baseAttribute/selectAll")
+      this.models=[]
+      this.$axios.get("/api/baseModel/selectAll")
           .then(response => {
             const res = response.data
             if (res.ret === true) {
-              this.attrs = res.data
+              for (var i = 0; i < res.data.length; i++) {
+                this.models.push(res.data[i])
+              }
             }
           })
     },
     insertModle(form) {
       let checked=[]
       for (var i = 0; i < this.checkedAttr.length; i++) {
-        checked.push(this.checkedAttr[i].attributeId)
+        checked.push(this.checkedAttr[i].attributeName)
       }
-      const formparam ={
+      const para={
         modelTypeName: form.modelTypeName,
-        modelTypeChnName: form.modelTypeCHNName,
-        modelFunctionId: form.modelFuntionId,
-        modelFunctionName: form.modelFuntionName
+        modelTypeChnName: form.modelTypeChnName,
+        modelFunctionId: form.modelFunctionId,
+        modelFunctionName: form.modelFunctionName,
+        attributeNames: checked.toString()
       }
-      const ids = {
-        ids: checked.toString()
-      }
-      this.$axios.post("/api/baseModel/insert", formparam,ids)
+      this.$axios.post("/api/baseModel/insert", para)
           .then(response => {
             const res = response.data
             if (res.ret == true) {
               this.$message({showClose: true, message: "添加成功", type: 'success'});
-              this.selectAll();
-              this.dialogFormVisible = false
+              this.selectModelAll();
+              this.form={}
+              this.handleCheckAllChange (false)
             }
           }).catch(reason => {
         console.log(reason)
       })
-      console.log(formparam)
-      console.log(checked)
-      console.log(form)
+    },
+    deletemodel(row) {
+      this.$confirm('此操作将删除该模式, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios.get("/api/baseModel/delete?modelTypeName=" + row.modelTypeName)
+            .then(response => {
+              const res = response.data
+              if (res.ret === true) {
+                this.$message({showClose: true, message: "删除成功", type: 'success'});
+              } else {
+                this.$message({showClose: true, message: "删除失败", type: 'fail'});
+              }
+              this.selectModelAll();
+            })
+      })
     }
 
   }
