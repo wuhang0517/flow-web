@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <div style="width: 300px">
-      <el-button @click="toggleTab('sign')"><a>签约</a></el-button>
+    <div style="width: 400px">
+      <el-button @click="toggleTab('sign')"><a>渠道维护</a></el-button>
       <el-button @click="toggleTab('attr')"><a>属性维护</a></el-button>
       <el-button @click="toggleTab('module')"><a>模式维护</a></el-button>
     </div>

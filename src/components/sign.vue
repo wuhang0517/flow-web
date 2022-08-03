@@ -1,14 +1,14 @@
 <template>
   <div id="info">
-    <h1>属性维护</h1>
+    <h1>渠道维护</h1>
     <div style="width: 300px">
       渠道类型:
       <el-input v-model="input" size="medium" style="width: 200px" placeholder="请输入渠道类型"/>
     </div>
-    <el-container style="margin-top:20px;height: 800px; width: 100%; border: 1px solid #eee; color: #2c3e50">
+    <el-container style="margin-top:20px;height: 400px; width: 100%; border: 1px solid #eee; color: #2c3e50">
       <el-header style=" font-size: 12px">
         <div style="height:100%;width:20%;margin-top:0px;display: inline-block">
-          <h1 style="margin:0px">签约</h1>
+          <h1 style="margin:0px">渠道维护</h1>
         </div>
         <div
             style="height:100%;width:20%;position: absolute;right: 0px;display: inline-block">
@@ -33,15 +33,15 @@
               <el-table-column type="selection" width="50"/>
               <el-table-column prop="attrId" width="100" label="属性id"/>
               <el-table-column prop="attrName" width="100" label="属性名称"/>
-              <el-table-column label="属性值">
-                <template>
-                  <el-input size="mini"></el-input>
+              <el-table-column prop="value" label="属性值">
+                <template v-slot="">
+                  <el-input v-model="modelvalue" size="mini"></el-input>
                 </template>
               </el-table-column>
             </el-table>
             <el-button >确认</el-button>
           </el-table-column>
-          <el-table-column prop="modelTypeId" label="模式id" width="150"/>
+          <el-table-column prop="tradeTypename" label="渠道名称" width="150"/>
           <el-table-column prop="modelTypeName" label="模式名称" width="150"/>
           <el-table-column prop="modelTypeCHNName" label="模式中文名称" width="150"/>
           <el-table-column prop="modelFuntionId" label="模式对应的模组id" width="150"/>
@@ -50,14 +50,30 @@
         </el-table>
       </el-main>
     </el-container>
+    <el-container style="margin-top:20px;height: 400px; width: 100%; border: 1px solid #eee; color: #2c3e50">
+      <h1>基础功能</h1>
+      <div style="margin: 20px 0;">
+        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+        <div style="margin: 15px 0;"></div>
+        <el-checkbox-group v-model="checks" @change="handleCheckedCitiesChange">
+          <el-checkbox v-for="check in checkModel" :label="check" :key="check">{{check}}</el-checkbox>
+        </el-checkbox-group>
+      </div>
+    </el-container>
   </div>
 </template>
 
 <script>
+const allchecks = ['黑名单筛查', '高风险国别筛查', '汇路校验','限额查询'];
 export default {
   data() {
     return {
+      checkAll: false,
+      checks: [],
+      checkModel: allchecks,
+      isIndeterminate: false,
       input: '',
+      modelvalue:'',
       multipleSelection: [],
       tableData: [{modelTypeId: '1',
         modelTypeName: 'oure',
@@ -91,6 +107,15 @@ export default {
   methods: {
     handleSelectionChange(val) {
       this.multipleSelection = val
+    },
+    handleCheckAllChange(val) {
+      this.checks = val ? allchecks : [];
+      this.isIndeterminate = false;
+    },
+    handleCheckedCitiesChange(value) {
+      let checkedCount = value.length;
+      this.checkAll = checkedCount === this.checkModel.length;
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.checkModel.length;
     }
   }
 };

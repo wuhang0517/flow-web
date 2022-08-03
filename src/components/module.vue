@@ -11,7 +11,7 @@
           <div>
             <el-button style="width: 150px;position: absolute;right: 0px;margin-top:10px;background: #ffffff"
                        type="text"
-                       @click="dialogFormVisible() ">
+                       @click="insertmodel() ">
               新增
             </el-button>
             <el-button style="width: 150px;position: absolute;right: 200px;margin-top:10px;background: #ffffff"
@@ -35,7 +35,7 @@
               width="100">
             <template slot-scope="scope">
               <el-button @click="deletemodel(scope.row)" type="text" size="small">删除</el-button>
-              <el-button @click="updateattr(scope.row)" type="text" size="small">修改</el-button>
+              <el-button @click="updatemodel(scope.row)" type="text" size="small">修改</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -68,7 +68,7 @@
           </el-checkbox>
           <div style="margin: 15px 0;"></div>
           <el-checkbox-group v-model="checkedAttr" @change="handleCheckedCitiesChange">
-            <el-checkbox v-for="att in attrs" :label="att" :key="att.attributeId">{{
+            <el-checkbox v-for="att in attrs" :label="att" :key="att.attributeName">{{
                 att.attributeChnName
               }}
             </el-checkbox>
@@ -99,7 +99,8 @@ export default {
         modelFunctionId: '',
         modelFunctionName: ''
       },
-      formLabelWidth: '150px'
+      formLabelWidth: '150px',
+      check: []
     }
   },
   methods: {
@@ -113,8 +114,11 @@ export default {
       this.checkAll = checkedCount === this.attrs.length;
       this.isIndeterminate = checkedCount > 0 && checkedCount < this.attrs.length;
     },
-    dialogFormVisible(){
-      this.insertModuleDialog =true
+    insertmodel() {
+      this.checkAll = false
+      this.form = []
+      this.checkedAttr = []
+      this.insertModuleDialog = true
       if (this.attrs.length <= 0) {
         this.$axios.get("/api/baseAttribute/selectAll")
             .then(response => {
@@ -126,7 +130,7 @@ export default {
       }
     },
     selectModelAll() {
-      this.models=[]
+      this.models = []
       this.$axios.get("/api/baseModel/selectAll")
           .then(response => {
             const res = response.data
@@ -138,11 +142,12 @@ export default {
           })
     },
     insertModle(form) {
-      let checked=[]
+
+      let checked = []
       for (var i = 0; i < this.checkedAttr.length; i++) {
         checked.push(this.checkedAttr[i].attributeName)
       }
-      const para={
+      const para = {
         modelTypeName: form.modelTypeName,
         modelTypeChnName: form.modelTypeChnName,
         modelFunctionId: form.modelFunctionId,
@@ -155,8 +160,8 @@ export default {
             if (res.ret == true) {
               this.$message({showClose: true, message: "添加成功", type: 'success'});
               this.selectModelAll();
-              this.form={}
-              this.handleCheckAllChange (false)
+              this.form = {}
+              this.handleCheckAllChange(false)
             }
           }).catch(reason => {
         console.log(reason)
@@ -179,8 +184,43 @@ export default {
               this.selectModelAll();
             })
       })
+    },
+    async updatemodel(row) {
+      this.checkedAttr = []
+      this.form = {}
+      this.insertModuleDialog = true
+      this.form.modelTypeName = row.modelTypeName
+      this.form.modelTypeChnName = row.modelTypeChnName
+      this.form.modelFunctionId = row.modelFunctionId
+      this.form.modelFunctionName = row.modelFunctionName
+      if (this.attrs.length <= 0) {
+        await this.$axios.get("/api/baseAttribute/selectAll")
+            .then(response => {
+              const res = response.data
+              if (res.ret === true) {
+                this.attrs = res.data
+              }
+            });
+      }
+      this.$axios.get("/api/attrModelRel/select?modelTypeName=" + row.modelTypeName)
+          .then(response => {
+            const res = response.data
+            if (res.ret === true) {
+              const attrname = res.data.attributeName.split(",")
+              for (let checkattr of attrname) {
+                for (let att of this.attrs) {
+                  if ((att.attributeName === checkattr)) {
+                    this.checkedAttr.push(att)
+                    continue
+                  }
+                }
+              }
+              let checkedCount = this.checkedAttr.length;
+              this.checkAll = this.checkedAttr.length === this.attrs.length;
+              this.isIndeterminate = checkedCount > 0 && checkedCount < this.attrs.length;
+            }
+          })
     }
-
   }
 
 }

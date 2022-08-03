@@ -11,7 +11,7 @@
           <div>
             <el-button style="width: 150px;position: absolute;right: 0px;margin-top:10px;background: #ffffff"
                        type="text"
-                       @click="dialogFormVisible=true">
+                       @click="insertattr()">
               新增
             </el-button>
             <el-button style="width: 150px;position: absolute;right: 200px;margin-top:10px;background: #ffffff"
@@ -51,7 +51,7 @@
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="insertAttr(form,type)">确 定</el-button>
+          <el-button type="primary" @click="confimattr(form,type)">确 定</el-button>
         </div>
       </el-dialog>
     </div>
@@ -74,7 +74,7 @@ export default {
     }
   },
   methods: {
-    insertAttr(form, type) {
+    confimattr(form, type) {
       const attr = {
         attributeId: form.attributeId,
         attributeName: form.attributeName,
@@ -94,15 +94,14 @@ export default {
             const res = response.data
             if (res.ret == true) {
               this.$message({showClose: true, message: msg, type: 'success'});
-            }else {
+            } else {
               this.$message({showClose: true, message: res.msg, type: 'fail'});
             }
-            this.form={}
+            this.form = {}
             this.selectAll();
           }).catch(reason => {
         console.log(reason)
       });
-
     },
     handleClick(row) {
       this.$confirm('此操作将删除该属性, 是否继续?', '提示', {
@@ -139,9 +138,14 @@ export default {
       this.form.attrName = row.attributeName
       this.form.attrChnName = row.attributeChnName
       this.type = 'update'
-      this.form =row
+      this.form = row
     },
+    insertattr() {
+      this.dialogFormVisible = true
+      this.form = {}
+    }
   }
+
 }
 </script>
 
